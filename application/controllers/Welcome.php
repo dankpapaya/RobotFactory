@@ -23,12 +23,18 @@ class Welcome extends Application {
         $totalBotsSold = 0;
         $totalBotsBought = 0;
 
-        $this->data['pagebody'] = 'homepage';
-        // build the list of parts, to pass on to our view
-        $source = $this->PartsModel->all();
-        $robots = $this->RobotsModel->all();
-        $history = $this->HistoryModel->all();
-        $robotPart = array();
+        $this->data['pagebody'] = 'homepage'; 
+		// build the list of parts, to pass on to our view
+		$source = $this->PartsModel->all();
+		$robots = $this->RobotsModel->all();
+		$history = $this->HistoryModel->all();
+		$robotPart = array ();
+		$recentRobots[] = array();
+		$recentRobots[0] = array(         'recentTop'     =>  'c1',
+									       'recentTorso'   => 'c2',
+									       'recentBottom'  => 'c3',
+									       'recentRobotId' => "Default");
+
 
         //loop through and count the amount of parts for each
         foreach ($source as $record) {
@@ -44,46 +50,56 @@ class Welcome extends Application {
             }
 
             $totalParts = $totalParts + 1;
-        }
-        // size of records
-        $i = sizeof($record);
-        // counts the amount of robots assembled and also add the recently created bots (3 only)
-        foreach ($robots as $record) {
-            $totalRobotsAssem = $totalRobotsAssem + 1;
-            if ($i <= 3) {
-                $recentRobots[] = array('recentTop' => $record['top'],
-                    'recentTorso' => $record['torso'],
-                    'recentBottom' => $record['bottom'],
-                    'recentRobotId' => $record['robot_id']);
-            }
-            $i--;
-        }
-        //loop through history and find the amount of sold and bought
-        foreach ($history as $record) {
-            if ($record['purchaseType'] == "sell") {
-                $totalBotsSold = $totalBotsSold + 1;
-            } else if ($record['purchaseType'] == "buy") {
-                $totalBotsBought = $totalBotsBought + 1;
-            }
-        }
-        //get the amount of money 
-        $response = file_get_contents('https://umbrella.jlparry.com/info/balance/papaya');
-        //store the counted parts into the array
-        $robotPart[] = array('totalPartsCounter' => $totalParts,
-            'topPartsCounter' => $topPartsCounter,
-            'torsoPartsCounter' => $torsoPartsCounter,
-            'bottomPartsCounter' => $bottomPartsCounter,
-            'totalRobotsAssem' => $totalRobotsAssem,
-            'topImageSrc' => 'a1.jpeg',
-            'torsoImageSrc' => 'a2.jpeg',
-            'bottomImageSrc' => 'a3.jpeg',
-            'balance' => $response,
-            'totalBotsSold' => $totalBotsSold,
-            'totalBotsBought' => $totalBotsBought);
-        $this->data['robotParts'] = $robotPart;
-        $this->data['recentRobots'] = $recentRobots;
+		}
+		// size of records
+		$i = sizeof($robots);
+		$j = 1;
+		// counts the amount of robots assembled and also add the recently created bots (3 only)
+		foreach($robots as $record)
+		{
 
-        $this->render();
-    }
+			$totalRobotsAssem = $totalRobotsAssem + 1;
+			if($i <= 3){
+				$recentRobots[$j] = array( 'recentTop'   => $record['top'],
+									       'recentTorso'   => $record['torso'],
+									       'recentBottom'  => $record['bottom'],
+									       'recentRobotId' => $record['robot_id']);
+			
+			}
+			
+			$j++;
+			
+		}
+		//loop through history and find the amount of sold and bought
+		foreach($history as $record)
+		{
+			if($record['purchaseType'] == "sell"){
+				$totalBotsSold = $totalBotsSold + 1;
+			}else if($record['purchaseType'] == "buy"){
+				$totalBotsBought = $totalBotsBought + 1;
+			}
+		}
+		//get the amount of money 
+		$response = file_get_contents('https://umbrella.jlparry.com/info/balance/papaya');
+		//store the counted parts into the array
+		$robotPart[] = array('totalPartsCounter' => $totalParts, 
+                            'topPartsCounter'    => $topPartsCounter, 
+                            'torsoPartsCounter'  => $torsoPartsCounter, 
+                            'bottomPartsCounter' => $bottomPartsCounter,
+                            'totalRobotsAssem'   => $totalRobotsAssem,
+                            'topImageSrc'        => 'a1.jpeg',
+                            'torsoImageSrc'      => 'a2.jpeg',
+                            'bottomImageSrc'     => 'a3.jpeg',
+                            'balance'            => $response,
+                            'totalBotsSold'      => $totalBotsSold,
+                            'totalBotsBought'    => $totalBotsBought);
+		$this->data['robotParts']   = $robotPart;
+		if(sizeof($recentRobots) !=  0){
+			$this->data['recentRobots'] = $recentRobots;
+		}
+		
+ 
+		$this->render();
+	}
 
 }
